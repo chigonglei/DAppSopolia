@@ -1,3 +1,5 @@
+/* eslint-disable react-hooks/exhaustive-deps */
+
 import {
   useEffect,
   useState
@@ -55,6 +57,10 @@ function Voting() {
 
     try {
 
+      console.log(
+        "Fetching latest blockchain votes..."
+      );
+
       const contract =
         await getEthereumContract();
 
@@ -62,6 +68,11 @@ function Voting() {
 
       const data =
         await contract.getCandidates();
+
+      console.log(
+        "Updated Candidates:",
+        data
+      );
 
       setCandidates(data);
 
