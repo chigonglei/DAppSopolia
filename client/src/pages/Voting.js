@@ -31,28 +31,39 @@ function Voting() {
   const [account, setAccount] =
     useState("");
 
-  const [electionStatus,
-    setElectionStatus] =
-    useState("Loading");
+  const [
+    electionStatus,
+    setElectionStatus
+  ] = useState("Loading");
 
-  const [showErrorModal,
-    setShowErrorModal] =
-    useState(false);
+  const [
+    showErrorModal,
+    setShowErrorModal
+  ] = useState(false);
 
-  const [showVoteModal,
-    setShowVoteModal] =
-    useState(false);
+  const [
+    showVoteModal,
+    setShowVoteModal
+  ] = useState(false);
 
-  const [selectedCandidate,
-    setSelectedCandidate] =
-    useState(null);
+  const [
+    selectedCandidate,
+    setSelectedCandidate
+  ] = useState(null);
 
-  const [errorMessage,
-    setErrorMessage] =
-    useState("");
+  const [
+    errorMessage,
+    setErrorMessage
+  ] = useState("");
+
+  const [
+    successMessage,
+    setSuccessMessage
+  ] = useState("");
 
   const navigate = useNavigate();
 
+  // Load Candidates
   const loadCandidates = async () => {
 
     try {
@@ -105,6 +116,7 @@ function Voting() {
     }
   };
 
+  // Load Wallet
   const loadWallet = async () => {
 
     try {
@@ -138,6 +150,7 @@ function Voting() {
     }
   };
 
+  // Disconnect Wallet
   const disconnectWallet = () => {
 
     setAccount("");
@@ -145,9 +158,14 @@ function Voting() {
     navigate("/");
   };
 
-  const openVoteModal = (candidate) => {
+  // Open Vote Modal
+  const openVoteModal = (
+    candidate
+  ) => {
 
-    if (electionStatus === "Ended") {
+    if (
+      electionStatus === "Ended"
+    ) {
 
       setErrorMessage(
         "Election has ended"
@@ -163,6 +181,7 @@ function Voting() {
     setShowVoteModal(true);
   };
 
+  // Vote Function
   const vote = async () => {
 
     try {
@@ -177,10 +196,28 @@ function Voting() {
           selectedCandidate.index
         );
 
+      // Wait for blockchain confirmation
       await tx.wait();
 
+      // Close modal
       setShowVoteModal(false);
 
+      // Show success popup
+      setSuccessMessage(
+        `✅ Vote Successful!\nYou voted for ${
+          selectedCandidate.name ||
+          selectedCandidate[0]
+        }`
+      );
+
+      // Auto hide after 5 sec
+      setTimeout(() => {
+
+        setSuccessMessage("");
+
+      }, 10000);
+
+      // Reload latest votes
       loadCandidates();
 
     } catch (error) {
@@ -198,6 +235,7 @@ function Voting() {
     }
   };
 
+  // Initial Load
   useEffect(() => {
 
     loadWallet();
@@ -333,7 +371,10 @@ function Voting() {
 
           {
             candidates.map(
-              (candidate, index) => (
+              (
+                candidate,
+                index
+              ) => (
 
                 <CandidateCard
                   key={index}
@@ -354,6 +395,45 @@ function Voting() {
 
       </div>
 
+      {/* Success Popup */}
+
+      {
+  successMessage && (
+
+    <div className="success-overlay">
+
+      <div className="success-modal">
+
+        <div className="success-badge">
+
+          Vote Successful
+
+        </div>
+
+        {
+          successMessage
+            .split("\n")
+            .map((line, index) => (
+
+              <div
+                key={index}
+                className="success-line"
+              >
+
+                {line}
+
+              </div>
+            ))
+        }
+
+      </div>
+
+    </div>
+  )
+}
+
+      {/* Vote Modal */}
+
       <VoteConfirmModal
 
         isOpen={showVoteModal}
@@ -367,6 +447,8 @@ function Voting() {
         }
 
       />
+
+      {/* Error Modal */}
 
       <ErrorModal
 
