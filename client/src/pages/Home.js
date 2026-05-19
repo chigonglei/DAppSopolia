@@ -19,136 +19,168 @@ import {
 
 function Home() {
 
+  // =========================
+  // States
+  // =========================
+
   const [account, setAccount] =
     useState("");
 
-  const [showModal, setShowModal] =
-    useState(false);
+  const [
+    tempAccount,
+    setTempAccount
+  ] = useState("");
 
-  const [startTime, setStartTime] =
-    useState(0);
+  const [
+    showModal,
+    setShowModal
+  ] = useState(false);
 
-  const [endTime, setEndTime] =
-    useState(0);
+  const [
+    startTime,
+    setStartTime
+  ] = useState(0);
 
-  const [remainingTime,
-    setRemainingTime] =
-    useState(0);
+  const [
+    endTime,
+    setEndTime
+  ] = useState(0);
 
-  const [electionStatus,
-    setElectionStatus] =
-    useState("Loading");
+  const [
+    remainingTime,
+    setRemainingTime
+  ] = useState(0);
 
-  const [candidates,
-    setCandidates] =
-    useState([]);
+  const [
+    electionStatus,
+    setElectionStatus
+  ] = useState("Loading");
 
-  const [totalVotes,
-    setTotalVotes] =
-    useState(0);
+  const [
+    candidates,
+    setCandidates
+  ] = useState([]);
+
+  const [
+    totalVotes,
+    setTotalVotes
+  ] = useState(0);
 
   const navigate = useNavigate();
 
+  // =========================
+  // Load Election Data
+  // =========================
+
   useEffect(() => {
 
-    const loadElectionData = async () => {
+    const loadElectionData =
+      async () => {
 
-      try {
+        try {
 
-        const contract =
-          await getEthereumContract();
+          const contract =
+            await getEthereumContract();
 
-        if (!contract) return;
+          if (!contract) return;
 
-        const start =
-          Number(
-            await contract.startTime()
+          const start =
+            Number(
+              await contract.startTime()
+            );
+
+          const end =
+            Number(
+              await contract.endTime()
+            );
+
+          setStartTime(start);
+
+          setEndTime(end);
+
+          const candidateData =
+            await contract.getCandidates();
+
+          setCandidates(candidateData);
+
+          let votes = 0;
+
+          candidateData.forEach(
+            (candidate) => {
+
+              votes += Number(
+                candidate.voteCount
+              );
+            }
           );
 
-        const end =
-          Number(
-            await contract.endTime()
-          );
+          setTotalVotes(votes);
 
-        console.log("START:", start);
+        } catch (error) {
 
-        console.log("END:", end);
-
-        setStartTime(start);
-
-        setEndTime(end);
-
-        const candidateData =
-          await contract.getCandidates();
-
-        setCandidates(candidateData);
-
-        let votes = 0;
-
-        candidateData.forEach((candidate) => {
-
-          votes += Number(
-            candidate.voteCount
-          );
-        });
-
-        setTotalVotes(votes);
-
-      } catch (error) {
-
-        console.log(error);
-      }
-    };
+          console.log(error);
+        }
+      };
 
     loadElectionData();
 
   }, []);
 
+  // =========================
+  // Countdown Timer
+  // =========================
+
   useEffect(() => {
 
-    const timer = setInterval(() => {
+    const timer =
+      setInterval(() => {
 
-      const current =
-        Math.floor(
-          Date.now() / 1000
-        );
+        const current =
+          Math.floor(
+            Date.now() / 1000
+          );
 
-      if (current < startTime) {
+        if (current < startTime) {
 
-        setElectionStatus(
-          "Not Started"
-        );
+          setElectionStatus(
+            "Not Started"
+          );
 
-        setRemainingTime(
-          startTime - current
-        );
+          setRemainingTime(
+            startTime - current
+          );
 
-      } else if (
-        current <= endTime
-      ) {
+        } else if (
+          current <= endTime
+        ) {
 
-        setElectionStatus(
-          "Active"
-        );
+          setElectionStatus(
+            "Active"
+          );
 
-        setRemainingTime(
-          endTime - current
-        );
+          setRemainingTime(
+            endTime - current
+          );
 
-      } else {
+        } else {
 
-        setElectionStatus(
-          "Ended"
-        );
+          setElectionStatus(
+            "Ended"
+          );
 
-        setRemainingTime(0);
-      }
+          setRemainingTime(0);
+        }
 
-    }, 1000);
+      }, 1000);
 
-    return () => clearInterval(timer);
+    return () =>
+      clearInterval(timer);
 
   }, [startTime, endTime]);
+
+  // =========================
+  // Refresh Votes
+  // =========================
 
   useEffect(() => {
 
@@ -169,12 +201,14 @@ function Home() {
 
           let votes = 0;
 
-          candidateData.forEach((candidate) => {
+          candidateData.forEach(
+            (candidate) => {
 
-            votes += Number(
-              candidate.voteCount
-            );
-          });
+              votes += Number(
+                candidate.voteCount
+              );
+            }
+          );
 
           setTotalVotes(votes);
 
@@ -190,7 +224,13 @@ function Home() {
 
   }, []);
 
-  const formatTime = (seconds) => {
+  // =========================
+  // Format Time
+  // =========================
+
+  const formatTime = (
+    seconds
+  ) => {
 
     const hours =
       Math.floor(seconds / 3600);
@@ -203,92 +243,153 @@ function Home() {
     const secs =
       seconds % 60;
 
-    return `${hours}h ${minutes}m ${secs}s`;
+    return `
+      ${hours}h
+      ${minutes}m
+      ${secs}s
+    `;
   };
 
-  const connectWallet = async () => {
+  // =========================
+  // Connect Wallet
+  // =========================
 
-    try {
+  const connectWallet =
+    async () => {
 
-      if (!window.ethereum) {
+      try {
 
-        alert("Please install MetaMask");
+        if (!window.ethereum) {
 
-        return;
-      }
+          alert(
+            "Please install MetaMask"
+          );
 
-      if (electionStatus === "Ended") {
+          return;
+        }
 
-        alert("Voting has ended");
+        if (
+          electionStatus === "Ended"
+        ) {
 
-        return;
-      }
+          alert(
+            "Voting has ended"
+          );
 
-      const chainId =
-        await window.ethereum.request({
-          method: "eth_chainId"
-        });
+          return;
+        }
 
-      const decimalChainId =
-        parseInt(chainId, 16);
+        const chainId =
+          await window.ethereum.request({
+            method: "eth_chainId"
+          });
 
-      if (decimalChainId !== 11155111) {
+        const decimalChainId =
+          parseInt(chainId, 16);
 
-        alert(
-          "Please switch to Sepolia Network"
+        if (
+          decimalChainId !== 11155111
+        ) {
+
+          alert(
+            "Please switch to Sepolia Network"
+          );
+
+          return;
+        }
+
+        // Request wallet
+        const accounts =
+          await window.ethereum.request({
+            method:
+              "eth_requestAccounts"
+          });
+
+        // TEMP ONLY
+        setTempAccount(
+          accounts[0]
         );
 
-        return;
+        // Show modal
+        setShowModal(true);
+
+      } catch (error) {
+
+        console.log(error);
+
+        alert(
+          "Wallet connection failed"
+        );
       }
+    };
 
-      const accounts =
-        await window.ethereum.request({
-          method:
-            "eth_requestAccounts"
-        });
+  // =========================
+  // Disconnect
+  // =========================
 
-      setAccount(accounts[0]);
+  const disconnectWallet =
+    () => {
 
-      setShowModal(true);
+      setAccount("");
+    };
 
-    } catch (error) {
+  // =========================
+  // Continue
+  // =========================
 
-      console.log(error);
+  const handleContinue =
+    () => {
 
-      alert("Wallet connection failed");
-    }
-  };
+      setAccount(
+        tempAccount
+      );
 
-  const disconnectWallet = () => {
+      setShowModal(false);
 
-    setAccount("");
-  };
+      navigate("/voting");
+    };
+
+  // =========================
+  // Cancel
+  // =========================
+
+  const handleCancel =
+    () => {
+
+      setTempAccount("");
+
+      setShowModal(false);
+    };
+
+  // =========================
+  // UI
+  // =========================
 
   return (
 
-   <div
-  className="app"
-  style={{
-    minHeight: "100vh",
+    <div
+      className="app"
+      style={{
+        minHeight: "100vh",
 
-    backgroundImage:
-      `linear-gradient(
-        rgba(2,6,23,0.72),
-        rgba(15,23,42,0.82)
-      ),
-      url(${backgroundImage})`,
+        backgroundImage:
+          `linear-gradient(
+            rgba(2,6,23,0.72),
+            rgba(15,23,42,0.82)
+          ),
+          url(${backgroundImage})`,
 
-    backgroundSize: "cover",
+        backgroundSize: "cover",
 
-    backgroundPosition: "center",
+        backgroundPosition: "center",
 
-    backgroundRepeat: "no-repeat",
+        backgroundRepeat: "no-repeat",
 
-    backgroundAttachment: "fixed",
+        backgroundAttachment: "fixed",
 
-    color: "white"
-  }}
->
+        color: "white"
+      }}
+    >
 
       <Navbar />
 
@@ -310,6 +411,8 @@ function Home() {
           }}
         >
 
+          {/* Header */}
+
           <div
             style={{
               marginBottom: "50px"
@@ -323,10 +426,14 @@ function Home() {
                 borderRadius: "999px",
                 background:
                   "rgba(59,130,246,0.15)",
+
                 border:
                   "1px solid rgba(59,130,246,0.3)",
+
                 marginBottom: "20px",
+
                 fontSize: "14px",
+
                 color: "#93c5fd"
               }}
             >
@@ -362,12 +469,17 @@ function Home() {
 
           </div>
 
+          {/* Dashboard */}
+
           <div
             style={{
               display: "grid",
+
               gridTemplateColumns:
                 "repeat(auto-fit,minmax(240px,1fr))",
+
               gap: "25px",
+
               marginBottom: "50px"
             }}
           >
@@ -381,8 +493,11 @@ function Home() {
               <div
                 style={{
                   fontSize: "28px",
+
                   fontWeight: "700",
+
                   marginTop: "10px",
+
                   color:
                     electionStatus === "Active"
                       ? "#22c55e"
@@ -460,6 +575,8 @@ function Home() {
 
           </div>
 
+          {/* Vote Count */}
+
           <div
             style={{
               marginBottom: "60px"
@@ -478,15 +595,20 @@ function Home() {
             <div
               style={{
                 display: "grid",
+
                 gridTemplateColumns:
                   "repeat(auto-fit,minmax(240px,1fr))",
+
                 gap: "25px"
               }}
             >
 
               {
                 candidates.map(
-                  (candidate, index) => (
+                  (
+                    candidate,
+                    index
+                  ) => (
 
                     <div
                       key={index}
@@ -560,6 +682,8 @@ function Home() {
 
           </div>
 
+          {/* Buttons */}
+
           <div
             style={{
               display: "flex",
@@ -613,9 +737,7 @@ function Home() {
 
                   <button
                     className="hero-btn"
-                    onClick={() =>
-                      navigate("/voting")
-                    }
+                    onClick={handleContinue}
                     disabled={
                       electionStatus !==
                       "Active"
@@ -625,45 +747,27 @@ function Home() {
                   </button>
 
                 </>
+
               )
             }
 
           </div>
 
-          {
-            electionStatus === "Ended" && (
-
-              <p
-                style={{
-                  marginTop: "25px",
-                  color: "#ef4444",
-                  fontSize: "20px",
-                  fontWeight: "600"
-                }}
-              >
-                Election has officially ended.
-                Voting is now closed.
-              </p>
-            )
-          }
-
         </div>
 
       </div>
+
+      {/* Wallet Modal */}
 
       <WalletModal
 
         isOpen={showModal}
 
-        account={account}
+        account={tempAccount}
 
-        onClose={() =>
-          setShowModal(false)
-        }
+        onClose={handleCancel}
 
-        onContinue={() =>
-          navigate("/voting")
-        }
+        onContinue={handleContinue}
 
       />
 

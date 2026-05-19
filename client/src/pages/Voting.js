@@ -61,6 +61,8 @@ function Voting() {
     setSuccessMessage
   ] = useState("");
 
+  const [successCountdown, setSuccessCountdown] = useState(10);
+
   const navigate = useNavigate();
 
   // Load Candidates
@@ -119,36 +121,73 @@ function Voting() {
   // Load Wallet
   const loadWallet = async () => {
 
-    try {
+  try {
 
-      if (!window.ethereum) {
-
-        navigate("/");
-
-        return;
-      }
-
-      const accounts =
-        await window.ethereum.request({
-          method: "eth_accounts"
-        });
-
-      if (accounts.length > 0) {
-
-        setAccount(accounts[0]);
-
-      } else {
-
-        navigate("/");
-      }
-
-    } catch (error) {
-
-      console.log(error);
+    if (!window.ethereum) {
 
       navigate("/");
+
+      return;
     }
-  };
+
+    const accounts =
+      await window.ethereum.request({
+        method: "eth_accounts"
+      });
+
+    if (accounts.length === 0) {
+
+      navigate("/");
+
+      return;
+    }
+
+    const wallet =
+      accounts[0];
+
+    setAccount(wallet);
+
+    // =================================
+    // CHECK WHITELIST
+    // =================================
+
+    const contract =
+      await getEthereumContract();
+
+    if (!contract) return;
+
+    const eligible =
+      await contract.isEligibleVoter(
+        wallet
+      );
+
+    // NOT ELIGIBLE
+    if (!eligible) {
+
+      setErrorMessage(
+        "❌ This wallet is not authorized to vote."
+      );
+
+      setShowErrorModal(true);
+
+      // Redirect after 3 sec
+      setTimeout(() => {
+
+        navigate("/");
+
+      }, 3000);
+
+      return;
+    }
+
+  } catch (error) {
+
+    console.log(error);
+
+    navigate("/");
+  }
+};
+
 
   // Disconnect Wallet
   const disconnectWallet = () => {
@@ -211,11 +250,26 @@ function Voting() {
       );
 
       // Auto hide after 5 sec
-      setTimeout(() => {
+      // Start countdown
+setSuccessCountdown(10);
 
-        setSuccessMessage("");
+const interval = setInterval(() => {
 
-      }, 10000);
+  setSuccessCountdown((prev) => {
+
+    if (prev <= 1) {
+
+      clearInterval(interval);
+
+      setSuccessMessage("");
+
+      return 0;
+    }
+
+    return prev - 1;
+  });
+
+}, 1000);
 
       // Reload latest votes
       loadCandidates();
@@ -397,7 +451,8 @@ function Voting() {
 
       {/* Success Popup */}
 
-      {
+      
+  {
   successMessage && (
 
     <div className="success-overlay">
@@ -426,11 +481,18 @@ function Voting() {
             ))
         }
 
+        <div className="success-close">
+
+          Closing in {successCountdown}s...
+
+        </div>
+
       </div>
 
     </div>
   )
-}
+  }
+ 
 
       {/* Vote Modal */}
 

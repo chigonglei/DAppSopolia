@@ -5,12 +5,21 @@ export const CONTRACT_ADDRESS =
 
 export const CONTRACT_ABI = [
 
+  // =========================
+  // Constructor
+  // =========================
+
   {
     "inputs": [
       {
         "internalType": "string[]",
         "name": "candidateNames",
         "type": "string[]"
+      },
+      {
+        "internalType": "address[]",
+        "name": "voters",
+        "type": "address[]"
       },
       {
         "internalType": "uint256",
@@ -27,6 +36,10 @@ export const CONTRACT_ABI = [
     "type": "constructor"
   },
 
+  // =========================
+  // Vote Function
+  // =========================
+
   {
     "inputs": [
       {
@@ -40,6 +53,10 @@ export const CONTRACT_ABI = [
     "stateMutability": "nonpayable",
     "type": "function"
   },
+
+  // =========================
+  // Get Candidates
+  // =========================
 
   {
     "inputs": [],
@@ -67,6 +84,10 @@ export const CONTRACT_ABI = [
     "type": "function"
   },
 
+  // =========================
+  // Start Time
+  // =========================
+
   {
     "inputs": [],
     "name": "startTime",
@@ -80,6 +101,10 @@ export const CONTRACT_ABI = [
     "stateMutability": "view",
     "type": "function"
   },
+
+  // =========================
+  // End Time
+  // =========================
 
   {
     "inputs": [],
@@ -95,6 +120,10 @@ export const CONTRACT_ABI = [
     "type": "function"
   },
 
+  // =========================
+  // Remaining Time
+  // =========================
+
   {
     "inputs": [],
     "name": "getRemainingTime",
@@ -108,6 +137,10 @@ export const CONTRACT_ABI = [
     "stateMutability": "view",
     "type": "function"
   },
+
+  // =========================
+  // Has Voted
+  // =========================
 
   {
     "inputs": [
@@ -127,27 +160,59 @@ export const CONTRACT_ABI = [
     ],
     "stateMutability": "view",
     "type": "function"
+  },
+
+  // =========================
+  // Check Eligible Voter
+  // =========================
+
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "voter",
+        "type": "address"
+      }
+    ],
+    "name": "isEligibleVoter",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
   }
 ];
 
 export const getEthereumContract = async () => {
 
   if (!window.ethereum) {
+
     alert("Please install MetaMask");
+
     return null;
   }
 
-  const provider = new ethers.BrowserProvider(
-    window.ethereum
-  );
+  const provider =
+    new ethers.BrowserProvider(
+      window.ethereum
+    );
 
-  const signer = await provider.getSigner();
+  const signer =
+    await provider.getSigner();
 
-  const contract = new ethers.Contract(
-    CONTRACT_ADDRESS,
-    CONTRACT_ABI,
-    signer
-  );
+  const contract =
+    new ethers.Contract(
+
+      CONTRACT_ADDRESS,
+
+      CONTRACT_ABI,
+
+      signer
+    );
 
   return contract;
 };

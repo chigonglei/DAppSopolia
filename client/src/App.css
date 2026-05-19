@@ -916,3 +916,16 @@
       translateY(0);
   }
 }
+
+.success-close {
+
+  margin-top: 25px;
+
+  color: #94a3b8;
+
+  font-size: 16px;
+
+  font-weight: 600;
+
+  letter-spacing: 1px;
+}
