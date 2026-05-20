@@ -28,11 +28,11 @@ async function main() {
     // Candidates
     const candidates = [
 
-        "DEEPOO",
+        "X",
 
-        "NITISH",
+        "Y",
 
-        "HITLER"
+        "Z"
 
     ];
 
